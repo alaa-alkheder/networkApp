@@ -2,6 +2,7 @@ package com.javainuse.controller;
 
 
 import com.javainuse.dao.EstatesRepository;
+import com.javainuse.error.NotFoundException;
 import com.javainuse.model.DAOEstate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -35,8 +37,13 @@ public class EstatesController {
 
     @GetMapping(value = "/{id}")
     public ResponseEntity<DAOEstate> findById(@PathVariable int id) {
-        DAOEstate result = estatesService.findById(Integer.valueOf(id)).get();
-        return new ResponseEntity<DAOEstate>(result, HttpStatus.OK);
+        try {
+
+            DAOEstate result = estatesService.findById(id).get();
+            return new ResponseEntity<DAOEstate>(result, HttpStatus.OK);
+        }catch (NoSuchElementException e){
+            throw new NotFoundException(e.getMessage());
+        }
     }
 
     @GetMapping(value = {"/available"})
@@ -54,16 +61,25 @@ public class EstatesController {
 
     @DeleteMapping(value = "/delete/{id}")
     public ResponseEntity<Void> deleteEstate(@PathVariable int id) {
+        try {
         estatesService.deleteById(id);
         return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
+    }catch (NoSuchElementException e){
+        throw new NotFoundException(e.getMessage());
+    }
     }
 
     @PutMapping(value = "/update/{id}/{buyer}")
     public DAOEstate updateEstate(@PathVariable int id, @PathVariable String buyer) {
-        DAOEstate temp =estatesService.findById(id).get();
-        temp.setBuyers(buyer);
-        temp.setState(true);
-        return  estatesService.save(temp);
+        try {
+
+            DAOEstate temp =estatesService.findById(Integer.valueOf(id)).get();
+            temp.setBuyers(buyer);
+            temp.setState(true);
+            return  estatesService.save(temp);
+        }catch (NoSuchElementException e){
+            throw new NotFoundException(e.getMessage());
+        }
     }
 
 

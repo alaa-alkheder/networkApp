@@ -30,19 +30,9 @@ public class MessageQController {
         template.convertAndSend(MessageQueueConfig.topicExchangeName,
                                 MessageQueueConfig.routingKey,
                                 message);
-//        ArrayList<DAOEstate> estates = (ArrayList<DAOEstate>) esatateReposotary.findAll();
-//        request.setAttribute("estates", estates);
         return "done";
     }
-    
-/*
-    @PostMapping(path = "/divest", consumes = "application/json")
-    public void divest_F(@RequestBody MessageQResource message) {}
-*/
 
-    @GetMapping("/divest")
-    public String go2StatisticsPage(HttpServletRequest request){
-        return "statistics-page";
-    }
+
 
 }
