@@ -25,13 +25,13 @@ public class ParameterController {
     private ParameterRepository parameterService;
 
     @Cacheable("params")
-    @GetMapping(value = {"", "/"})
+    @GetMapping(value = "/parameter")
     public List<DAOParameter> home() {
         return (List<DAOParameter>) parameterService.findAll();
     }
 
     @Cacheable("params")
-    @GetMapping(value = {"/{id}"})
+    @GetMapping(value = {"/parameter/{id}"})
     public DAOParameter getById(@PathVariable int id) {
         return parameterService.findById(id).get();
     }

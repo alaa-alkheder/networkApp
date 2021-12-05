@@ -1,15 +1,21 @@
 package com.javainuse.controller;
 
 
+import com.javainuse.Transaction.InvalidRollbackInException;
+import com.javainuse.Transaction.TransactionalService;
 import com.javainuse.dao.EstatesRepository;
 import com.javainuse.error.NotFoundException;
+import com.javainuse.error.RoleBackException;
 import com.javainuse.model.DAOEstate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -25,6 +31,10 @@ import java.util.NoSuchElementException;
 @RestController
 @RequestMapping(value = "/api/v1/estates")
 public class EstatesController {
+
+    @Autowired
+    TransactionalService transactionalService;
+
 
     @Autowired
     private EstatesRepository estatesService;
@@ -80,6 +90,25 @@ public class EstatesController {
         }catch (NoSuchElementException e){
             throw new NotFoundException(e.getMessage());
         }
+    }
+
+    @Transactional(rollbackFor = InvalidRollbackInException.class)
+    @PostMapping("/sold/{estateId}")
+    public String Sold(@PathVariable("estateId") String estateId, @RequestParam String SalerName, @RequestParam(defaultValue = "0") double price, HttpServletRequest request) throws InvalidRollbackInException {
+        DAOEstate sold = estatesService.findById(Integer.valueOf(estateId)).get();
+//        sold.setSoldAt(new Date());
+        sold.setBuyers(SalerName);
+        if (price != 0)
+            sold.setCost((int) price);
+        try {
+            transactionalService.canSave(estateId);
+            sold.setState(true);
+            estatesService.save(sold);
+            ArrayList<DAOEstate> temp = (ArrayList<DAOEstate>) estatesService.findAll();
+        } catch (InvalidRollbackInException e) {
+           throw new RoleBackException(e.getMessage());
+        }
+        return "Done";
     }
 
 
