@@ -1,5 +1,6 @@
 package com.javainuse;
 
+import com.javainuse.config.JwtRequestFilter;
 import com.javainuse.dao.LogRepository;
 import com.javainuse.model.DAOEstate;
 import com.javainuse.model.DAOLog;
@@ -7,6 +8,7 @@ import org.aspectj.lang.annotation.AfterReturning;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.stereotype.Component;
+//import sun.net.httpserver.AuthFilter;
 
 
 /**
@@ -27,7 +29,6 @@ public class Aspect {
 
     @AfterReturning(pointcut = "within(com.javainuse.controller.EstatesController)",returning = "estates")
     public void EstateAspect(DAOEstate estates){
-        System.out.println(estates);
         if(estates==null)
             return;
         String NewObj="estates{Id:"+estates.getId()+",Name:"+estates.getEstatesName()+",NumberOfShares:"+estates.getNumberOfShares()+
@@ -41,7 +42,7 @@ public class Aspect {
         DAOLog log=new DAOLog();
         log.setObj(NewData);
         //todo add userName to aspect Function
-//        log.setName(AuthFilter.userDetails.getUsername());
+//        log.setName(JwtRequestFilter.userDetails.getUsername());
         log.setName("soso.so");
         logRepository.save(log);
     }

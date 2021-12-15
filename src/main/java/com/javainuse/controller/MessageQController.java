@@ -1,16 +1,13 @@
 package com.javainuse.controller;
 
 
+
 import com.javainuse.MessageQResource;
 import com.javainuse.MessageQueueConfig;
 import com.javainuse.dao.EstatesRepository;
-import com.javainuse.model.DAOEstate;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 
 @RestController
 public class MessageQController {

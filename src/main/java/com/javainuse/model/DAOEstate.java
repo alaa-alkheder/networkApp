@@ -22,11 +22,15 @@ public class DAOEstate {
 	@Column(nullable = false,name = "buyer")
 	private String buyers="";
 
+	@Version
+	private Long version;
+
 	public DAOEstate() {
 		timestamp=System.currentTimeMillis();
 	}
 
 	public DAOEstate(String estatesName, int numberOfShares, int cost, boolean state, String buyers) {
+		this();
 		this.estatesName = estatesName;
 		this.numberOfShares = numberOfShares;
 		this.cost = cost;
@@ -88,5 +92,13 @@ public class DAOEstate {
 
 	public void setBuyers(String buyers) {
 		this.buyers = buyers;
+	}
+
+	public Long getVersion() {
+		return version;
+	}
+
+	public void setVersion(Long version) {
+		this.version = version;
 	}
 }

@@ -13,5 +13,5 @@ import org.springframework.stereotype.Repository;
 
 
 @Repository
-public interface ParameterRepository extends CrudRepository<DAOParameter,Integer> {
+public interface ParameterRepository extends CrudRepository<DAOParameter,Integer>  {
 }

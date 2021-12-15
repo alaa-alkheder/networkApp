@@ -3,17 +3,18 @@ package com.javainuse.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "parameter")
-public class DAOParameter {
+public class DAOParameter implements Serializable {
 
 	@Id
 	@GeneratedValue
 	private int id;
-	@Column(name = "parkey")
+	@Column(name = "parkey")// parameter Key
 	private String key;
-	@Column(name = "parvalue")
+	@Column(name = "parvalue")//parameter value
 	private String value;
 
 	public DAOParameter() {

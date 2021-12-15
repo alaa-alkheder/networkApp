@@ -7,10 +7,13 @@ import com.javainuse.dao.EstatesRepository;
 import com.javainuse.error.NotFoundException;
 import com.javainuse.error.RoleBackException;
 import com.javainuse.model.DAOEstate;
+import com.javainuse.service.ParameterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +29,7 @@ import java.util.NoSuchElementException;
  * Github:alaa-alkheder
  */
 
-@Component
+ @Component
 //@Controller
 @RestController
 @RequestMapping(value = "/api/v1/estates")
@@ -35,9 +38,12 @@ public class EstatesController {
     @Autowired
     TransactionalService transactionalService;
 
+    @Autowired
+    private ParameterService parameterService;
 
     @Autowired
     private EstatesRepository estatesService;
+
 
     @GetMapping(value = {"", "/"})
     public ResponseEntity<List<DAOEstate>> home() {
@@ -65,6 +71,8 @@ public class EstatesController {
 
     @PostMapping(value = {"", "/"})
     public ResponseEntity<DAOEstate> createNewEstate(@RequestBody DAOEstate estates) {
+        if (estates.getNumberOfShares()==-1) estates.setNumberOfShares(Integer.parseInt(parameterService.findById(1).getValue()));
+         estates.setCost(estates.getCost()*Integer.parseInt(parameterService.findById(2).getValue()));
         DAOEstate result = estatesService.save(estates);
         return new ResponseEntity<DAOEstate>(result, HttpStatus.CREATED);
     }
@@ -92,20 +100,35 @@ public class EstatesController {
         }
     }
 
-    @Transactional(rollbackFor = InvalidRollbackInException.class)
+    @PutMapping(value = "/update/{id}/{name}/{cost}/{shareCount}")
+    public DAOEstate updateBasicElement(@PathVariable int id, @PathVariable String name, @PathVariable String cost, @PathVariable String shareCount) {
+        try {
+            DAOEstate temp =estatesService.findById(Integer.valueOf(id)).get();
+            temp.setEstatesName(name);
+            temp.setCost(Integer.parseInt(cost));
+            temp.setNumberOfShares(Integer.parseInt(shareCount));
+            return  estatesService.save(temp);
+        }catch (NoSuchElementException e){
+            throw new NotFoundException(e.getMessage());
+        }
+    }
+
+//    @Transactional(rollbackFor = InvalidRollbackInException.class)
+    @Transactional(propagation= Propagation.REQUIRES_NEW)
     @PostMapping("/sold/{estateId}")
     public String Sold(@PathVariable("estateId") String estateId, @RequestParam String SalerName, @RequestParam(defaultValue = "0") double price, HttpServletRequest request) throws InvalidRollbackInException {
         DAOEstate sold = estatesService.findById(Integer.valueOf(estateId)).get();
 //        sold.setSoldAt(new Date());
         sold.setBuyers(SalerName);
-        if (price != 0)
-            sold.setCost((int) price);
+//        if (price != 0)
+//            sold.setCost((int) price);
         try {
-            transactionalService.canSave(estateId);
+//            transactionalService.canSave(estateId);
             sold.setState(true);
             estatesService.save(sold);
             ArrayList<DAOEstate> temp = (ArrayList<DAOEstate>) estatesService.findAll();
-        } catch (InvalidRollbackInException e) {
+        } catch (
+    ObjectOptimisticLockingFailureException e) {
            throw new RoleBackException(e.getMessage());
         }
         return "Done";
