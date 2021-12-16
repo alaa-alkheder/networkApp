@@ -5,6 +5,7 @@ import com.javainuse.dao.ParameterRepository;
 import com.javainuse.model.DAOParameter;
 import com.javainuse.service.ParameterService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,13 @@ public class ParameterController {
     @Autowired
     private ParameterService parameterService;
 
+    @Value("${server.port}")
+    private int port;
+
+    @GetMapping(value = "/")
+    public int  testLoadBalens(){
+        return port;
+    }
 
     @GetMapping(value = "/parameter")
     public List<DAOParameter> home() {
@@ -47,9 +55,9 @@ public class ParameterController {
     }
 
 
-    @PutMapping(value = "/parameter/update/{id}/{key}/{value}")
-    public DAOParameter updateParameter(@PathVariable String id, @PathVariable String key, @PathVariable String value) {
-        return parameterService.updateParameter(id, key, value);
+    @PostMapping(value = "/parameter/update/{id}/{value}")
+    public DAOParameter updateParameter(@PathVariable String id, @PathVariable String value) {
+        return parameterService.updateParameter(id,  value);
 
     }
 

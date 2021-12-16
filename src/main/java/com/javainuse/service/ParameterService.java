@@ -37,11 +37,10 @@ public class ParameterService {
     }
 
     @CacheEvict("params")
-    public DAOParameter updateParameter(String id, String key, String value) {
+    public DAOParameter updateParameter(String id,   String value) {
         //todo write body of function
         DAOParameter daoParameter = parameterService.findById(Integer.valueOf(id)).get();
-        daoParameter.setKey(key);
-        daoParameter.setValue(value);
+         daoParameter.setValue(value);
         return parameterService.save(daoParameter);
 
     }

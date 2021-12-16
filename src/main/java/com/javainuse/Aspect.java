@@ -5,6 +5,7 @@ import com.javainuse.dao.LogRepository;
 import com.javainuse.model.DAOEstate;
 import com.javainuse.model.DAOLog;
 import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.stereotype.Component;
@@ -19,9 +20,9 @@ import org.springframework.stereotype.Component;
  */
 
 
-@Component
 @org.aspectj.lang.annotation.Aspect
-@EnableAspectJAutoProxy
+@Component
+
 public class Aspect {
 
     @Autowired

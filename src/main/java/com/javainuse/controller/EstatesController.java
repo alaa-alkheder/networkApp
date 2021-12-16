@@ -7,6 +7,7 @@ import com.javainuse.dao.EstatesRepository;
 import com.javainuse.error.NotFoundException;
 import com.javainuse.error.RoleBackException;
 import com.javainuse.model.DAOEstate;
+import com.javainuse.service.EstateService;
 import com.javainuse.service.ParameterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,7 +30,7 @@ import java.util.NoSuchElementException;
  * Github:alaa-alkheder
  */
 
- @Component
+@Component
 //@Controller
 @RestController
 @RequestMapping(value = "/api/v1/estates")
@@ -42,12 +43,14 @@ public class EstatesController {
     private ParameterService parameterService;
 
     @Autowired
-    private EstatesRepository estatesService;
+    private EstatesRepository estatesrepository;
+    @Autowired
+    private EstateService estateService;
 
 
     @GetMapping(value = {"", "/"})
     public ResponseEntity<List<DAOEstate>> home() {
-        List<DAOEstate> result = (List<DAOEstate>) estatesService.findAll();
+        List<DAOEstate> result = (List<DAOEstate>) estatesrepository.findAll();
         return new ResponseEntity<List<DAOEstate>>(result, HttpStatus.OK);
     }
 
@@ -55,9 +58,9 @@ public class EstatesController {
     public ResponseEntity<DAOEstate> findById(@PathVariable int id) {
         try {
 
-            DAOEstate result = estatesService.findById(id).get();
+            DAOEstate result = estatesrepository.findById(id).get();
             return new ResponseEntity<DAOEstate>(result, HttpStatus.OK);
-        }catch (NoSuchElementException e){
+        } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
         }
     }
@@ -65,37 +68,34 @@ public class EstatesController {
     @GetMapping(value = {"/available"})
     // Todo add the condition to search
     public ResponseEntity<List<DAOEstate>> getAvailableHome() {
-        List<DAOEstate> result = estatesService.findByStateIsFalse();
+        List<DAOEstate> result = estatesrepository.findByStateIsFalse();
         return new ResponseEntity<List<DAOEstate>>(result, HttpStatus.OK);
     }
 
     @PostMapping(value = {"", "/"})
     public ResponseEntity<DAOEstate> createNewEstate(@RequestBody DAOEstate estates) {
-        if (estates.getNumberOfShares()==-1) estates.setNumberOfShares(Integer.parseInt(parameterService.findById(1).getValue()));
-         estates.setCost(estates.getCost()*Integer.parseInt(parameterService.findById(2).getValue()));
-        DAOEstate result = estatesService.save(estates);
+        DAOEstate result = estateService.createNewEstate(estates);
         return new ResponseEntity<DAOEstate>(result, HttpStatus.CREATED);
     }
 
     @DeleteMapping(value = "/delete/{id}")
     public ResponseEntity<Void> deleteEstate(@PathVariable int id) {
         try {
-        estatesService.deleteById(id);
-        return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
-    }catch (NoSuchElementException e){
-        throw new NotFoundException(e.getMessage());
-    }
+            estateService.deleteEstate(id);
+            return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
+        } catch (NoSuchElementException e) {
+            throw new NotFoundException(e.getMessage());
+        }
     }
 
     @PutMapping(value = "/update/{id}/{buyer}")
     public DAOEstate updateEstate(@PathVariable int id, @PathVariable String buyer) {
         try {
-
-            DAOEstate temp =estatesService.findById(Integer.valueOf(id)).get();
+            DAOEstate temp = estatesrepository.findById(Integer.valueOf(id)).get();
             temp.setBuyers(buyer);
             temp.setState(true);
-            return  estatesService.save(temp);
-        }catch (NoSuchElementException e){
+            return estatesrepository.save(temp);
+        } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
         }
     }
@@ -103,21 +103,21 @@ public class EstatesController {
     @PutMapping(value = "/update/{id}/{name}/{cost}/{shareCount}")
     public DAOEstate updateBasicElement(@PathVariable int id, @PathVariable String name, @PathVariable String cost, @PathVariable String shareCount) {
         try {
-            DAOEstate temp =estatesService.findById(Integer.valueOf(id)).get();
+            DAOEstate temp = estatesrepository.findById(Integer.valueOf(id)).get();
             temp.setEstatesName(name);
             temp.setCost(Integer.parseInt(cost));
             temp.setNumberOfShares(Integer.parseInt(shareCount));
-            return  estatesService.save(temp);
-        }catch (NoSuchElementException e){
+            return estatesrepository.save(temp);
+        } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage());
         }
     }
 
-//    @Transactional(rollbackFor = InvalidRollbackInException.class)
-    @Transactional(propagation= Propagation.REQUIRES_NEW)
+    //    @Transactional(rollbackFor = InvalidRollbackInException.class)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @PostMapping("/sold/{estateId}")
     public String Sold(@PathVariable("estateId") String estateId, @RequestParam String SalerName, @RequestParam(defaultValue = "0") double price, HttpServletRequest request) throws InvalidRollbackInException {
-        DAOEstate sold = estatesService.findById(Integer.valueOf(estateId)).get();
+        DAOEstate sold = estatesrepository.findById(Integer.valueOf(estateId)).get();
 //        sold.setSoldAt(new Date());
         sold.setBuyers(SalerName);
 //        if (price != 0)
@@ -125,11 +125,11 @@ public class EstatesController {
         try {
 //            transactionalService.canSave(estateId);
             sold.setState(true);
-            estatesService.save(sold);
-            ArrayList<DAOEstate> temp = (ArrayList<DAOEstate>) estatesService.findAll();
+            estatesrepository.save(sold);
+            ArrayList<DAOEstate> temp = (ArrayList<DAOEstate>) estatesrepository.findAll();
         } catch (
-    ObjectOptimisticLockingFailureException e) {
-           throw new RoleBackException(e.getMessage());
+                ObjectOptimisticLockingFailureException e) {
+            throw new RoleBackException(e.getMessage());
         }
         return "Done";
     }
